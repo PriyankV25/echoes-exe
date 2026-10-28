@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en" data-reduced-motion="false" data-crt="true">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes.exe — The Ghost Terminal</title>
+    <meta name="description" content="Open-Source AI Digital Archaeologist. Every abandoned project has a last known voice.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Fira+Code:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/terminal.css">
+</head>
+<body class="ghost-crt">
+
+    <!-- CRT Overlay Elements -->
+    <div class="crt-scanlines" aria-hidden="true"></div>
+    <div class="crt-vignette" aria-hidden="true"></div>
+    <div class="crt-flicker" aria-hidden="true"></div>
+    <canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+    <!-- 1. BOOT SEQUENCE SCREEN -->
+    <div id="boot-screen" class="boot-overlay" role="dialog" aria-label="Terminal Boot Initialization">
+        <div class="boot-container">
+            <div class="boot-glitch" data-text="ECHOES.EXE">ECHOES.EXE</div>
+            <div class="boot-tagline">Open-Source AI Digital Archaeologist // v1.0.0</div>
+            <div class="boot-terminal-log" id="boot-log">
+                <div class="boot-line">> SYSTEM BUS POWERED. BIOS VERSION 0x9F4D</div>
+                <div class="boot-line">> SCANNING MEMORY SECTORS... [OK 640KB PHANTOM RAM]</div>
+                <div class="boot-line">> LOCATING SOULS OF ABANDONED REPOSITORIES...</div>
+                <div class="boot-line">> INITIALIZING GHOST PROTOCOL...</div>
+                <div class="boot-line highlight">> CONNECTING SPECTRAL COMMUNICATOR... READY.</div>
+            </div>
+            <div class="boot-progress-bar">
+                <div class="boot-progress-fill" id="boot-progress"></div>
+            </div>
+            <button id="boot-skip-btn" class="ghost-btn ghost-btn-outline boot-skip">
+                [ SKIP INITIALIZATION ]
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN TERMINAL APP SHELL -->
+    <div class="terminal-shell" id="app-shell">
+        
+        <!-- TOP STATUS HEADER -->
+        <header class="terminal-header">
+            <div class="header-left">
+                <div class="header-logo">
+                    <span class="skull-icon" aria-hidden="true">🪦</span>
+                    <span class="logo-title glitch-hover" data-text="ECHOES.EXE">ECHOES.EXE</span>
+                    <span class="logo-badge">GHOST TERMINAL</span>
+                </div>
+                <div class="active-project-pill" id="active-project-pill">
+                    <span class="status-dot"></span>
+                    <span id="active-project-name">STANDBY // NO ARCHIVE LOADED</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Provider Badge -->
+                <div class="status-indicator provider-badge" id="header-provider-badge" title="Active AI Provider">
+                    <span class="badge-icon">⚡</span>
+                    <span class="badge-label">AI:</span>
+                    <span class="badge-val" id="header-provider-val">GROQ</span>
+                </div>
+
+                <!-- Storage Badge -->
+                <div class="status-indicator storage-badge" id="header-storage-badge" title="Memory Vault Mode">
+                    <span class="badge-icon">💾</span>
+                    <span class="badge-label">VAULT:</span>
+                    <span class="badge-val" id="header-storage-val">LOCAL</span>
+                </div>
+
+                <!-- Accessibility & Audio Toggles -->
+                <button class="icon-toggle-btn" id="toggle-crt-btn" title="Toggle CRT Scanline Effect">
+                    <span class="icon-text">CRT</span>
+                </button>
+                <button class="icon-toggle-btn" id="toggle-audio-btn" title="Toggle Ghost Audio Pulses">
+                    <span id="audio-icon-text">🔇</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- NAVIGATION COMMAND BAR (TABS) -->
+        <nav class="terminal-nav" aria-label="Archaeology Terminal Modes">
+            <button class="nav-tab active" data-tab="dashboard">
+                <span class="tab-code">[01]</span> DASHBOARD
+            </button>
+            <button class="nav-tab" data-tab="archaeology" id="nav-archaeology">
+                <span class="tab-code">[02]</span> ARCHAEOLOGY
+            </button>
+            <button class="nav-tab" data-tab="ghost-interview" id="nav-interview">
+                <span class="tab-code">[03]</span> INTERVIEW THE GHOST
+            </button>
+            <button class="nav-tab" data-tab="last-transmission" id="nav-transmission">
+                <span class="tab-code">[04]</span> LAST TRANSMISSION
+            </button>
+            <button class="nav-tab" data-tab="revival-lab" id="nav-revival">
+                <span class="tab-code">[05]</span> REVIVAL LAB
+            </button>
+            <button class="nav-tab" data-tab="memory-vault">
+                <span class="tab-code">[06]</span> MEMORY VAULT
+            </button>
+            <button class="nav-tab" data-tab="settings">
+                <span class="tab-code">[07]</span> SETTINGS
+            </button>
+        </nav>
+
+        <!-- MAIN VIEWPORT CONTAINER -->
+        <main class="terminal-viewport">
+
+            <!-- ATMOSPHERIC REAL PROGRESS OVERLAY (Corresponds to actual server work) -->
+            <div id="scan-overlay" class="scan-overlay hidden" aria-live="polite">
+                <div class="scan-box">
+                    <div class="scan-radar">
+                        <div class="radar-sweep"></div>
+                        <span class="radar-ghost">👻</span>
+                    </div>
+                    <div class="scan-title" id="scan-status-text">INITIALIZING ARCHIVAL SCAN...</div>
+                    <div class="scan-subtext" id="scan-detail-text">Excavating commit logs, dependencies, and syntax specters</div>
+                    <div class="scan-terminal-lines" id="scan-terminal-lines"></div>
+                </div>
+            </div>
+
+            <!-- TAB 1: DASHBOARD / INGESTION -->
+            <section id="tab-dashboard" class="tab-view active">
+                <div class="dashboard-grid">
+                    
+                    <!-- Left: Ingestion Terminal -->
+                    <div class="ghost-card ingestion-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> INGESTION TERMINAL // EXCAVATE TARGET REPOSITORY
+                        </div>
+                        <div class="card-body">
+                            <p class="section-lead">
+                                Every abandoned project has a last known voice. Point Echoes.exe toward any public GitHub repository, upload a repository ZIP, or choose a historical archive to interview its digital ghost.
+                            </p>
+
+                            <!-- Ingestion Mode Selector -->
+                            <div class="ingest-mode-selector">
+                                <button class="mode-btn active" data-mode="url">GitHub URL</button>
+                                <button class="mode-btn" data-mode="upload">ZIP Upload</button>
+                                <button class="mode-btn" data-mode="sample">Historic Samples</button>
+                                <button class="mode-btn" data-mode="local">Local Path</button>
+                            </div>
+
+                            <!-- Mode 1: GitHub URL Form -->
+                            <div class="mode-panel active" id="mode-panel-url">
+                                <label for="input-repo-url" class="field-label">PUBLIC GITHUB REPOSITORY URL:</label>
+                                <div class="terminal-input-group">
+                                    <span class="prompt-prefix">git clone >></span>
+                                    <input type="url" id="input-repo-url" class="ghost-input" placeholder="https://github.com/owner/repository" spellcheck="false" autocomplete="off">
+                                    <button id="btn-analyze-url" class="ghost-btn ghost-btn-primary">
+                                        EXCAVATE
+                                    </button>
+                                </div>
+                                <div class="field-hint">
+                                    Protected with SSRF validation, clone depth limits, and GitHub API fallback.
+                                </div>
+                            </div>
+
+                            <!-- Mode 2: ZIP Upload Form -->
+                            <div class="mode-panel" id="mode-panel-upload">
+                                <label class="field-label">UPLOAD REPOSITORY ARCHIVE (.ZIP):</label>
+                                <div class="drop-zone" id="zip-drop-zone">
+                                    <div class="drop-icon">📦</div>
+                                    <div class="drop-text">Drag & drop repository ZIP here, or <span class="highlight-underline">click to browse</span></div>
+                                    <div class="drop-subtext">Max 30MB • Protected against Zip Slip & Zip Bombs</div>
+                                    <input type="file" id="file-zip-input" class="hidden-file-input" accept=".zip,.tar.gz,.tar">
+                                </div>
+                                <div id="selected-file-name" class="selected-file-display hidden"></div>
+                                <button id="btn-analyze-upload" class="ghost-btn ghost-btn-primary full-width" disabled>
+                                    UNPACK & INVESTIGATE ARCHIVE
+                                </button>
+                            </div>
+
+                            <!-- Mode 3: Historic Samples (Instant Offline Verification) -->
+                            <div class="mode-panel" id="mode-panel-sample">
+                                <div class="sample-cards-grid">
+                                    <div class="sample-card" data-sample="canvas-nest-legacy">
+                                        <div class="sample-badge">JavaScript / Canvas</div>
+                                        <div class="sample-title">canvas-nest-legacy</div>
+                                        <div class="sample-desc">Interactive particle visualizer dormant since late 2017. Outdated webpack & mocha suites.</div>
+                                        <button class="ghost-btn ghost-btn-secondary sample-select-btn">
+                                            [ LOAD ARCHIVE ]
+                                        </button>
+                                    </div>
+                                    <div class="sample-card" data-sample="phantom-cli-py">
+                                        <div class="sample-badge">Python / CLI</div>
+                                        <div class="sample-title">phantom-cli-py</div>
+                                        <div class="sample-desc">2018 developer process monitor. Python 2/3 transition relic with unpinned packages.</div>
+                                        <button class="ghost-btn ghost-btn-secondary sample-select-btn">
+                                            [ LOAD ARCHIVE ]
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mode 4: Local Directory -->
+                            <div class="mode-panel" id="mode-panel-local">
+                                <label for="input-local-path" class="field-label">LOCAL DIRECTORY PATH (HOST MACHINE):</label>
+                                <div class="terminal-input-group">
+                                    <span class="prompt-prefix">cd >></span>
+                                    <input type="text" id="input-local-path" class="ghost-input" placeholder="C:\Users\username\Projects\legacy-app" spellcheck="false">
+                                    <button id="btn-analyze-local" class="ghost-btn ghost-btn-primary">
+                                        ANALYZE
+                                    </button>
+                                </div>
+                                <div class="field-hint">
+                                    Requires local filesystem access. Restricts traversal into critical system root folders.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Right: Observatory Status & Quick Intel -->
+                    <div class="dashboard-sidebar">
+                        
+                        <!-- Ghost Terminal System Stats -->
+                        <div class="ghost-card sidebar-card">
+                            <div class="card-header">
+                                <span class="terminal-symbol">>_</span> SYSTEM TELEMETRY
+                            </div>
+                            <div class="card-body">
+                                <div class="telemetry-row">
+                                    <span class="tele-key">HOSTED INFERENCE:</span>
+                                    <span class="tele-val highlight-green" id="tele-groq-status">Checking...</span>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span class="tele-key">LOCAL OFFLINE AI:</span>
+                                    <span class="tele-val" id="tele-ollama-status">Checking...</span>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span class="tele-key">STORAGE BACKEND:</span>
+                                    <span class="tele-val" id="tele-storage-mode">SQLite (Local)</span>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span class="tele-key">SENTRY TRACING:</span>
+                                    <span class="tele-val" id="tele-sentry-status">Active (Local/Agent)</span>
+                                </div>
+                                <div class="telemetry-row">
+                                    <span class="tele-key">DEVRELAY GATEWAY:</span>
+                                    <span class="tele-val highlight-cyan" id="tele-devrelay-status">Port 5001 (Connected)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Challenge Card -->
+                        <div class="ghost-card sidebar-card challenge-highlight-card">
+                            <div class="card-header">
+                                <span class="skull-icon">🎃</span> HACKTOBERFEST DEV CHALLENGE
+                            </div>
+                            <div class="card-body">
+                                <div class="challenge-title">Week 4: Ghost in the Machine</div>
+                                <div class="challenge-desc">
+                                    Echoes.exe investigates forgotten repositories with open-weight models (Gemma) & Groq, grounded with MongoDB Atlas memory & Sentry agent tracing.
+                                </div>
+                                <div class="challenge-tags">
+                                    <span class="c-tag">#Gemma</span>
+                                    <span class="c-tag">#MongoDB</span>
+                                    <span class="c-tag">#Sentry</span>
+                                    <span class="c-tag">#Render</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core Principles Warning -->
+                        <div class="ghost-card sidebar-card warning-card">
+                            <div class="card-header">
+                                <span class="terminal-symbol">!</span> ARCHAEOLOGIST'S OATH
+                            </div>
+                            <div class="card-body">
+                                <p class="law-text">
+                                    <strong>Horror is the presentation; evidence is the product.</strong><br>
+                                    This terminal never fabricates dates, commit messages, or reasons why development halted. If evidence is missing, the ghost admits the void.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: ARCHAEOLOGY VIEW (EVIDENCE PORTFOLIO) -->
+            <section id="tab-archaeology" class="tab-view">
+                <div class="archaeology-header-bar">
+                    <div class="repo-meta-summary">
+                        <h2 class="repo-title" id="arch-repo-title">Loading Repository...</h2>
+                        <div class="repo-meta-tags" id="arch-repo-tags"></div>
+                    </div>
+                    <div class="health-summary-gauge">
+                        <div class="gauge-ring">
+                            <span class="gauge-val" id="arch-health-score">--</span>
+                            <span class="gauge-label">HEALTH</span>
+                        </div>
+                        <div class="gauge-status-text" id="arch-health-label">ANALYZING EVIDENCE</div>
+                    </div>
+                </div>
+
+                <div class="archaeology-grid">
+                    
+                    <!-- Timeline Card -->
+                    <div class="ghost-card arch-card timeline-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> CHRONOLOGICAL TIMELINE & COMMIT ACTIVITY
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline-metrics">
+                                <div class="time-metric">
+                                    <div class="tm-label">GENESIS (FIRST COMMIT)</div>
+                                    <div class="tm-val" id="tm-genesis-date">--</div>
+                                    <div class="tm-sub" id="tm-genesis-sub">--</div>
+                                </div>
+                                <div class="time-metric">
+                                    <div class="tm-label">SILENCE (FINAL COMMIT)</div>
+                                    <div class="tm-val highlight-amber" id="tm-silence-date">--</div>
+                                    <div class="tm-sub" id="tm-silence-sub">--</div>
+                                </div>
+                                <div class="time-metric">
+                                    <div class="tm-label">ACTIVE LIFESPAN</div>
+                                    <div class="tm-val" id="tm-lifespan">--</div>
+                                    <div class="tm-sub" id="tm-total-commits">-- commits</div>
+                                </div>
+                                <div class="time-metric">
+                                    <div class="tm-label">DORMANCY DURATION</div>
+                                    <div class="tm-val highlight-red" id="tm-dormancy">--</div>
+                                    <div class="tm-sub">days since last activity</div>
+                                </div>
+                            </div>
+
+                            <div class="activity-chart-wrapper">
+                                <div class="chart-label">VERIFIABLE COMMIT CADENCE OVER TIME:</div>
+                                <div class="activity-bar-chart" id="activity-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack & Dependencies -->
+                    <div class="ghost-card arch-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> DETECTED STACK & DEPENDENCIES
+                        </div>
+                        <div class="card-body">
+                            <div class="stack-breakdown" id="stack-breakdown-list"></div>
+                            <div class="manifest-evidence-box">
+                                <div class="manifest-label">MANIFEST DEPENDENCIES:</div>
+                                <div class="manifest-content" id="manifest-content-box">No manifests loaded</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test & Verification Indicators -->
+                    <div class="ghost-card arch-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> VERIFICATION & TEST OBSERVATORY
+                        </div>
+                        <div class="card-body">
+                            <div class="test-indicators-grid" id="test-indicators-grid"></div>
+                            <div class="documentation-evidence-box">
+                                <div class="manifest-label">DOCUMENTATION ARTIFACTS:</div>
+                                <div id="doc-artifacts-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verifiable Evidence Chunks Drawer -->
+                    <div class="ghost-card arch-card full-width">
+                        <div class="card-header flex-header">
+                            <span><span class="terminal-symbol">>_</span> GROUNDED EVIDENCE CHUNKS (<span id="chunk-count-badge">0</span> INDEXED)</span>
+                            <span class="header-hint">Source references used for Ghost Interviews & Vector Retrieval</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="evidence-chunks-scroll" id="evidence-chunks-list"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 3: INTERVIEW THE GHOST -->
+            <section id="tab-ghost-interview" class="tab-view">
+                <div class="interview-layout">
+                    
+                    <!-- Left: Ghost Terminal Chat Window -->
+                    <div class="ghost-card chat-card">
+                        <div class="card-header flex-header">
+                            <div class="ghost-avatar-block">
+                                <span class="ghost-avatar-pulse">👻</span>
+                                <div>
+                                    <div class="ghost-name" id="ghost-title-name">SPECTRAL MANIFESTATION</div>
+                                    <div class="ghost-status">CHANNEL OPEN // GROUNDED IN REPOSITORY CHUNKS</div>
+                                </div>
+                            </div>
+                            <div class="provider-switch-hint">
+                                Model: <span class="highlight-cyan" id="chat-active-model">Groq / Llama 3.3 70B</span>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Log -->
+                        <div class="chat-messages-container" id="chat-messages" role="log" aria-live="polite">
+                            <div class="chat-msg ghost-msg">
+                                <div class="msg-header">
+                                    <span class="msg-sender">[THE GHOST]</span>
+                                    <span class="msg-time">00:00:00</span>
+                                </div>
+                                <div class="msg-body">
+                                    I am the lingering voice of this archive. My memories are forged only from the commits that were pushed and the code that survived. Ask of my purpose, my final days, or what you must repair to wake me.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Suggested Questions Ribbon -->
+                        <div class="suggested-ribbon">
+                            <span class="ribbon-title">PROMPT THE GHOST:</span>
+                            <div class="suggested-pills" id="suggested-pills"></div>
+                        </div>
+
+                        <!-- Chat Input Box -->
+                        <form class="chat-input-bar" id="chat-form">
+                            <span class="chat-prompt-indicator">>_</span>
+                            <input type="text" id="chat-user-input" class="ghost-chat-input" placeholder="Ask the ghost about its architecture, final commit, or dependencies..." autocomplete="off">
+                            <button type="submit" id="chat-send-btn" class="ghost-btn ghost-btn-primary">
+                                COMMUNE
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Live Citations & Supporting Evidence Inspector -->
+                    <div class="ghost-card citations-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> EVIDENCE INSPECTOR & CITATIONS
+                        </div>
+                        <div class="card-body">
+                            <div class="citation-meta-panel">
+                                <div class="cite-stat">
+                                    <span class="cs-label">CITATION CONFIDENCE:</span>
+                                    <span class="cs-val highlight-green" id="inspect-confidence">100% Grounded</span>
+                                </div>
+                                <div class="cite-stat">
+                                    <span class="cs-label">UNTRUSTED REPO DATA:</span>
+                                    <span class="cs-val">Passive Artifacts Only</span>
+                                </div>
+                            </div>
+
+                            <div class="inspector-section-title">ACTIVE EVIDENCE EXCERPTS:</div>
+                            <div class="inspector-chunks-container" id="inspector-chunks">
+                                <div class="empty-inspector-hint">
+                                    Ask a question to see real-time retrieved file lines and commit excerpts supporting the Ghost's answer.
+                                </div>
+                            </div>
+
+                            <!-- External SerpApi Research Trigger -->
+                            <div class="external-research-box">
+                                <div class="inspector-section-title">EXTERNAL RESEARCH (SERPAPI):</div>
+                                <div class="serpapi-input-group">
+                                    <input type="text" id="input-research-pkg" class="ghost-input-sm" placeholder="Check dependency CVEs / guides">
+                                    <button id="btn-run-research" class="ghost-btn-sm ghost-btn-secondary">
+                                        SEARCH ADVISORIES
+                                    </button>
+                                </div>
+                                <div id="research-results-container" class="research-results-list"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 4: LAST TRANSMISSION (DIGITAL OBITUARY) -->
+            <section id="tab-last-transmission" class="tab-view">
+                <div class="transmission-container">
+                    
+                    <!-- Header Action Toolbar -->
+                    <div class="transmission-toolbar">
+                        <div class="obituary-badge">
+                            🪦 DIGITAL OBITUARY // THE LAST TRANSMISSION
+                        </div>
+                        <div class="toolbar-actions">
+                            <button id="btn-voice-narrate" class="ghost-btn ghost-btn-outline" title="Synthesize narration with ElevenLabs">
+                                🔊 HEAR THE GHOST
+                            </button>
+                            <button id="btn-export-markdown" class="ghost-btn ghost-btn-secondary">
+                                📥 EXPORT .MD
+                            </button>
+                            <button id="btn-export-json" class="ghost-btn ghost-btn-secondary">
+                                📥 EXPORT .JSON
+                            </button>
+                            <button id="btn-save-vault" class="ghost-btn ghost-btn-primary">
+                                💾 PRESERVE IN VAULT
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- The Obituary Sheet -->
+                    <article class="obituary-sheet" id="obituary-sheet">
+                        <header class="obituary-header">
+                            <h1 class="obituary-title" id="obit-title">Project Name</h1>
+                            <div class="obituary-subtitle" id="obit-subtitle">Last known voice of an unmaintained codebase</div>
+                            <div class="obituary-meta-row" id="obit-meta-row"></div>
+                        </header>
+
+                        <!-- Genesis & Silence Cards -->
+                        <div class="genesis-silence-grid">
+                            <div class="history-block genesis-block">
+                                <div class="hb-title">🌱 GENESIS // FIRST RECORDED BREATH</div>
+                                <div class="hb-content" id="obit-genesis-content">Loading...</div>
+                            </div>
+                            <div class="history-block silence-block">
+                                <div class="hb-title">🍂 SILENCE // FINAL RECORDED STATE</div>
+                                <div class="hb-content" id="obit-silence-content">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Synopsis -->
+                        <section class="obituary-section">
+                            <h3 class="section-heading">I. ARCHITECTURAL IDENTITY & PURPOSE</h3>
+                            <div class="section-content" id="obit-synopsis-content"></div>
+                        </section>
+
+                        <!-- Health & Survival Analysis -->
+                        <section class="obituary-section">
+                            <h3 class="section-heading">II. OBSERVATORY FINDINGS & SURVIVING ARTIFACTS</h3>
+                            <div class="section-content" id="obit-health-content"></div>
+                        </section>
+
+                        <!-- The Ghost's Poetic Farewell -->
+                        <section class="obituary-section spectral-farewell-box">
+                            <h3 class="section-heading spectral-heading">III. THE GHOST'S FINAL TRANSMISSION</h3>
+                            <div class="spectral-message" id="obit-final-message"></div>
+                            <div class="spectral-disclaimer" id="obit-disclaimer"></div>
+                        </section>
+
+                        <!-- Audio Player Element (hidden, triggered on user demand) -->
+                        <audio id="ghost-audio-player" class="hidden"></audio>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- TAB 5: REVIVAL LAB -->
+            <section id="tab-revival-lab" class="tab-view">
+                <div class="revival-header-bar">
+                    <div>
+                        <h2 class="view-title">REVIVAL LAB // RESTORATION PROTOCOLS</h2>
+                        <p class="view-subtitle">Actionable, evidence-backed revival recommendations prioritized by engineering risk. Zero arbitrary code execution.</p>
+                    </div>
+                    <div class="revival-summary-badges" id="revival-priority-counts"></div>
+                </div>
+
+                <div class="revival-checklist-container" id="revival-checklist-list">
+                    <!-- Populated dynamically with Critical, High, Medium, and Optional cards -->
+                </div>
+            </section>
+
+            <!-- TAB 6: MEMORY VAULT -->
+            <section id="tab-memory-vault" class="tab-view">
+                <div class="vault-header-bar">
+                    <div>
+                        <h2 class="view-title">MEMORY VAULT // PRESERVED INVESTIGATIONS</h2>
+                        <p class="view-subtitle">Persisted investigations in Local SQLite or MongoDB Atlas. Search past archives and re-interview their ghosts.</p>
+                    </div>
+                    <div class="vault-controls">
+                        <input type="text" id="vault-search-input" class="ghost-input" placeholder="Search investigations by name..." autocomplete="off">
+                        <button id="btn-refresh-vault" class="ghost-btn ghost-btn-secondary">REFRESH</button>
+                    </div>
+                </div>
+
+                <div class="vault-grid" id="vault-records-grid">
+                    <div class="vault-empty-state">
+                        <span class="empty-icon">🪦</span>
+                        <div class="empty-title">THE VAULT IS QUIET</div>
+                        <div class="empty-sub">No investigations saved yet. Ingest a repository and click 'PRESERVE IN VAULT'.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: SETTINGS & PROVIDER CONTROL -->
+            <section id="tab-settings" class="tab-view">
+                <div class="settings-grid">
+                    
+                    <!-- AI Provider Configuration -->
+                    <div class="ghost-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> AI INFERENCE PROVIDER
+                        </div>
+                        <div class="card-body">
+                            <p class="section-lead">Select between cloud-hosted inference (Groq) or 100% private local offline inference (Gemma via Ollama).</p>
+
+                            <div class="provider-radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="ai_provider_choice" value="groq" id="radio-prov-groq" checked>
+                                    <span class="radio-custom"></span>
+                                    <div class="radio-text">
+                                        <strong>Groq API — Hosted AI (Recommended for Hosted Demo)</strong>
+                                        <span class="radio-desc">High-speed inference. Requires GROQ_API_KEY in server environment.</span>
+                                    </div>
+                                </label>
+
+                                <label class="radio-label">
+                                    <input type="radio" name="ai_provider_choice" value="ollama" id="radio-prov-ollama">
+                                    <span class="radio-custom"></span>
+                                    <div class="radio-text">
+                                        <strong>Gemma + Ollama — Local Offline AI (100% Private)</strong>
+                                        <span class="radio-desc">Runs entirely on your machine. No cloud API key needed. Requires Ollama daemon.</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Provider Detail Fields -->
+                            <div class="provider-fields" id="fields-groq">
+                                <label class="field-label">GROQ MODEL ID:</label>
+                                <input type="text" id="input-groq-model" class="ghost-input" value="llama-3.3-70b-versatile">
+                                <div class="field-hint">Configured in server environment. Never exposed to browser.</div>
+                            </div>
+
+                            <div class="provider-fields hidden" id="fields-ollama">
+                                <label class="field-label">OLLAMA BASE URL:</label>
+                                <input type="text" id="input-ollama-url" class="ghost-input" value="http://localhost:11434">
+                                <label class="field-label" style="margin-top: 10px;">OLLAMA MODEL (e.g. gemma3):</label>
+                                <input type="text" id="input-ollama-model" class="ghost-input" value="gemma3">
+                                <div class="field-hint">Run <code>ollama run gemma3</code> in your local terminal to install model.</div>
+                            </div>
+
+                            <div class="settings-actions">
+                                <button id="btn-save-settings" class="ghost-btn ghost-btn-primary">
+                                    APPLY PROVIDER SETTINGS
+                                </button>
+                                <button id="btn-test-providers" class="ghost-btn ghost-btn-secondary">
+                                    TEST CONNECTIONS
+                                </button>
+                            </div>
+
+                            <div id="provider-test-results" class="provider-test-box hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Storage & Privacy Controls (MongoDB Atlas) -->
+                    <div class="ghost-card">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> STORAGE MODE & PRIVACY CONTROLS
+                        </div>
+                        <div class="card-body">
+                            <p class="section-lead">Manage persistent memory and vector search across local storage and MongoDB Atlas.</p>
+
+                            <div class="storage-mode-choice">
+                                <label class="field-label">ACTIVE STORAGE MODE:</label>
+                                <select id="select-storage-mode" class="ghost-select">
+                                    <option value="local">Local Mode (SQLite & Local Files — Zero Cloud Required)</option>
+                                    <option value="atlas">Atlas Mode (MongoDB Atlas Cloud Storage & Vector Search)</option>
+                                </select>
+                            </div>
+
+                            <div class="consent-box">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="check-cloud-consent">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">
+                                        <strong>Explicit Cloud Storage Consent:</strong> I authorize Echoes.exe to persist investigated repository metadata and evidence chunks in MongoDB Atlas. (Embeddings and metadata may reveal details about project structure).
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="atlas-status-card" id="atlas-status-card">
+                                <div class="asc-title">MONGODB ATLAS STATUS:</div>
+                                <div class="asc-desc" id="atlas-status-text">Checking Atlas credentials...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DevRelay Gateway Status -->
+                    <div class="ghost-card full-width">
+                        <div class="card-header">
+                            <span class="terminal-symbol">>_</span> DEVRELAY UNIFIED GATEWAY & HACKTOBERFEST
+                        </div>
+                        <div class="card-body devrelay-panel">
+                            <div class="devrelay-info">
+                                <div class="dr-title">CONNECTED DEVELOPER IDENTITY:</div>
+                                <div class="dr-user highlight-green" id="dr-author-name">Priyank Saxena (@priyank_dev)</div>
+                                <div class="dr-desc">DevRelay MCP gateway runs on port 5001. Integrated directly into Echoes.exe development and demonstration workflows.</div>
+                            </div>
+                            <div class="dr-badges">
+                                <div class="dr-badge">
+                                    <span class="dr-badge-icon">✓</span>
+                                    <span>DevRelay MCP Active</span>
+                                </div>
+                                <div class="dr-badge">
+                                    <span class="dr-badge-icon">✓</span>
+                                    <span>Hacktoberfest Week 4 Registered</span>
+                                </div>
+                                <div class="dr-badge">
+                                    <span class="dr-badge-icon">✓</span>
+                                    <span>Semantic DEV Search Verified</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER STATUS STRIP -->
+        <footer class="terminal-footer">
+            <div class="footer-left">
+                <span class="terminal-status-indicator">ONLINE</span>
+                <span class="footer-text">ECHOES.EXE // EVERY ABANDONED PROJECT HAS A LAST KNOWN VOICE</span>
+            </div>
+            <div class="footer-right">
+                <span class="accessibility-pill" id="motion-mode-pill">REDUCED MOTION: OFF</span>
+                <span class="timestamp" id="footer-clock">00:00:00 UTC</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Application JavaScript Engine -->
+    <script src="/static/js/terminal.js"></script>
+</body>
+</html>

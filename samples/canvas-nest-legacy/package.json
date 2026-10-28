@@ -1,0 +1,20 @@
+{
+  "name": "canvas-nest-legacy",
+  "version": "1.0.4",
+  "description": "An unmaintained particle canvas background visualizer for the ghost terminal era.",
+  "main": "src/canvas-nest.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "test": "mocha tests/"
+  },
+  "author": "Ghost Developer (ghost@void.net)",
+  "license": "MIT",
+  "dependencies": {
+    "webpack": "^3.10.0",
+    "babel-core": "^6.26.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}

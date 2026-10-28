@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: echoes-ghost-terminal
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: AI_PROVIDER
+        value: "groq"
+      - key: GROQ_MODEL
+        value: "llama-3.3-70b-versatile"
+      - key: STORAGE_MODE
+        value: "local"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SERPAPI_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
