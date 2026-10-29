@@ -41,7 +41,7 @@ flowchart TD
     subgraph Ingest ["Safe Ingestion & Security"]
         InputURL["GitHub URL"] --> SSRFGuard["SSRF & Schema Validator"]
         InputZIP["ZIP Upload"] --> ZipSlipGuard["Zip Slip & Bomb Protection"]
-        InputSample["Historic Samples"] --> SampleRepo["samples/canvas-nest-legacy<br/>samples/phantom-cli-py"]
+        InputSample["Historic Samples"] --> SampleRepo["Sample Repositories<br/>canvas-nest-legacy<br/>phantom-cli-py"]
         SSRFGuard --> Loader["Repository Loader"]
         ZipSlipGuard --> Loader
         SampleRepo --> Loader
@@ -56,30 +56,30 @@ flowchart TD
 
     subgraph AIProviders ["Dual AI Provider Architecture"]
         Retriever --> Factory["Provider Factory"]
-        Factory -->|Hosted AI| Groq["Groq API<br/>(Llama 3.3 70B Versatile)"]
-        Factory -->|Local Offline AI| Ollama["Gemma via Ollama<br/>(gemma3 on localhost:11434)"]
-        Factory -->|Zero Credentials| Heuristic["Heuristic Fallback Provider<br/>(Deterministic Facts)"]
+        Factory -->|Hosted AI| Groq["Groq API<br/>(Configured Hosted Model)"]
+        Factory -->|Local AI| Ollama["Gemma via Ollama<br/>(gemma3 on localhost:11434)"]
+        Factory -->|Fallback| Heuristic["Heuristic Fallback Provider<br/>(Deterministic Facts)"]
     end
 
     subgraph Grounding ["Verifiable Communication"]
         Groq --> GhostEngine["Ghost Engine & System Prompt"]
         Ollama --> GhostEngine
         Heuristic --> GhostEngine
-        GhostEngine --> Validator["Citation Validator<br/>([Source: <commit_or_file>])"]
+        GhostEngine --> Validator["Citation Validator<br/>(Source: commit or file)"]
         Validator --> Output["Grounded Interview & Obituary"]
     end
 
     subgraph Storage ["Persistent Memory Layer"]
         Output --> StorageMgr["Storage Manager"]
-        StorageMgr -->|Local Mode (Default)| SQLite["Local SQLite Vault<br/>(Zero Cloud Setup)"]
-        StorageMgr -->|Atlas Mode (Consent Required)| Atlas["MongoDB Atlas<br/>(Cloud Memory & Vector Search)"]
+        StorageMgr -->|Local Mode| SQLite["Local SQLite Vault<br/>(Local Persistence)"]
+        StorageMgr -->|Atlas Mode| Atlas["MongoDB Atlas<br/>(Cloud Persistence & Vector Search)"]
     end
 
     subgraph Integrations ["Observability & External Services"]
-        Extractor -.-> Sentry["Sentry Agent Tracing<br/>(6 Pipeline Stages)"]
-        Extractor -.-> SerpApi["SerpApi<br/>(CVEs & Migration Guides)"]
+        Extractor -.-> Sentry["Sentry<br/>(Pipeline Observability)"]
+        Extractor -.-> SerpApi["SerpApi<br/>(External Search)"]
         Obituary -.-> ElevenLabs["ElevenLabs<br/>(Voice Narration)"]
-        CoreEngine -.-> DevRelay["DevRelay MCP Gateway<br/>(Port 5001 / priyank_dev)"]
+        CoreEngine -.-> DevRelay["DevRelay MCP Gateway"]
     end
 ```
 
