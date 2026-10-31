@@ -10,6 +10,7 @@
 
 ---
 
+
 ## 1. Project Vision & Core Principle
 
 **Echoes.exe** is an AI-powered digital archaeologist that investigates forgotten, inactive, or legacy software projects. 
